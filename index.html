@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>🇺🇸 Beer Olympics 2026 🦅</title>
+<meta name="theme-color" content="#0a1747" />
+<style>
+:root{
+  --red:#b31942; --red-bright:#e63946; --blue:#0a1747; --blue2:#10256b;
+  --white:#ffffff; --cream:#f7f4ec; --gold:#ffd447; --star:#ffe98a;
+  --ink:#0b1020; --muted:#9fb0d8;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --font: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--font); color:var(--white);
+  background:
+    radial-gradient(1200px 600px at 50% -10%, #17307e 0%, rgba(23,48,126,0) 60%),
+    linear-gradient(180deg,#0a1747 0%, #0a1240 55%, #070d2e 100%);
+  min-height:100vh; overflow-x:hidden;
+}
+canvas#fw{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.app{position:relative;z-index:2;max-width:1080px;margin:0 auto;padding:0 14px 120px}
+
+/* ---------- Stripes banner ---------- */
+.flagbar{height:8px;background:repeating-linear-gradient(90deg,var(--red) 0 10%,#fff 10% 20%)}
+header.hero{
+  text-align:center;padding:26px 12px 14px;position:relative;
+}
+.stars-strip{font-size:18px;letter-spacing:8px;color:var(--gold);text-shadow:0 0 12px rgba(255,212,71,.6)}
+h1.title{
+  margin:6px 0 2px;font-size:clamp(34px,9vw,74px);line-height:.95;font-weight:900;
+  letter-spacing:1px;text-transform:uppercase;
+  background:linear-gradient(180deg,#fff 0%,#dfe7ff 45%,#9fb6ff 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 4px 0 rgba(179,25,66,.55)) drop-shadow(0 8px 14px rgba(0,0,0,.5));
+}
+.subtitle{font-weight:800;letter-spacing:3px;color:var(--gold);text-transform:uppercase;font-size:clamp(12px,3.4vw,18px)}
+.year-badge{
+  display:inline-block;margin-top:12px;padding:8px 20px;border-radius:999px;font-weight:900;
+  background:linear-gradient(180deg,var(--red-bright),var(--red));border:2px solid rgba(255,255,255,.5);
+  box-shadow:var(--shadow), inset 0 2px 0 rgba(255,255,255,.35);letter-spacing:2px
+}
+.countdown{margin:14px auto 4px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.cd-box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:8px 12px;min-width:64px}
+.cd-num{font-size:26px;font-weight:900;color:var(--gold);line-height:1}
+.cd-lab{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+
+/* ---------- Nav tabs ---------- */
+nav.tabs{
+  position:sticky;top:0;z-index:20;display:flex;gap:6px;overflow-x:auto;padding:10px 4px;margin:8px -14px 18px;
+  background:linear-gradient(180deg,rgba(7,13,46,.96),rgba(7,13,46,.72));backdrop-filter:blur(8px);
+  border-bottom:2px solid rgba(255,255,255,.08);scrollbar-width:none;
+}
+nav.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:0 0 auto;padding:10px 16px;border-radius:999px;font-weight:800;font-size:14px;letter-spacing:.5px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:#dbe4ff;cursor:pointer;white-space:nowrap;
+  transition:.15s;
+}
+.tab:hover{background:rgba(255,255,255,.12)}
+.tab.active{background:linear-gradient(180deg,var(--red-bright),var(--red));color:#fff;border-color:rgba(255,255,255,.6);box-shadow:0 4px 14px rgba(179,25,66,.5)}
+
+section.view{display:none;animation:fade .35s ease}
+section.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- Cards / generic ---------- */
+.card{
+  background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.045));
+  border:1px solid rgba(255,255,255,.16);border-radius:18px;padding:18px;margin:0 0 16px;
+  box-shadow:var(--shadow);backdrop-filter:blur(3px);
+}
+.card h2{margin:0 0 4px;font-size:22px;letter-spacing:.5px}
+.card .lead{color:var(--muted);margin:0 0 14px;font-size:14px}
+.sect-title{display:flex;align-items:center;gap:10px;margin:26px 4px 12px;font-size:14px;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+.sect-title::before,.sect-title::after{content:"";height:2px;flex:1;background:linear-gradient(90deg,transparent,rgba(255,212,71,.5),transparent)}
+
+/* ---------- Teams ---------- */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.team-card{
+  position:relative;padding:16px 14px;border-radius:16px;text-align:center;overflow:hidden;
+  background:linear-gradient(160deg,var(--blue2),#0a1852);border:1px solid rgba(255,255,255,.18);
+  box-shadow:var(--shadow);
+}
+.team-card::after{content:"★";position:absolute;top:-8px;right:6px;font-size:52px;color:rgba(255,255,255,.06)}
+.team-emoji{font-size:34px}
+.team-name{font-weight:900;margin-top:6px;font-size:16px;line-height:1.15}
+.team-rec{margin-top:8px;font-size:12px;color:var(--gold);font-weight:800;letter-spacing:1px}
+
+/* ---------- Schedule ---------- */
+.round-block{margin-bottom:8px}
+.round-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 2px}
+.round-tag{font-weight:900;letter-spacing:2px;text-transform:uppercase;font-size:13px}
+.parallel-note{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--gold);text-transform:uppercase;opacity:.85}
+.game-pill{display:inline-block;padding:5px 12px;border-radius:999px;font-weight:800;font-size:12px;letter-spacing:1px;background:linear-gradient(180deg,var(--red-bright),var(--red));border:1px solid rgba(255,255,255,.5)}
+.match{
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:10px;margin:8px 0;
+}
+.match-game{grid-column:1/-1;text-align:center;margin-bottom:2px}
+.match.done{border-color:rgba(255,212,71,.5)}
+.side{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.side.right{align-items:stretch}
+.pick{
+  border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#eaf0ff;border-radius:10px;
+  padding:9px 8px;font-weight:800;font-size:13px;cursor:pointer;transition:.12s;text-align:center;font-family:inherit;
+}
+.pick:hover{background:rgba(255,255,255,.14)}
+.pick.win{background:linear-gradient(180deg,#1f7a3d,#155e2e);border-color:#57d98a;color:#fff;box-shadow:0 0 0 2px rgba(87,217,138,.35)}
+.pick.lose{opacity:.5}
+.vs{font-weight:900;color:var(--muted);font-size:12px;padding:0 2px}
+.match .scores{grid-column:1/-1;display:flex;gap:8px;justify-content:center;align-items:center;margin-top:4px}
+.match .scores input{width:56px;text-align:center;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.25);color:#fff;padding:6px;font-weight:800;font-family:inherit}
+.bye-row{text-align:center;color:var(--muted);font-size:12px;letter-spacing:1px;padding:4px;font-style:italic}
+.clearbtn{background:transparent;border:1px dashed rgba(255,255,255,.25);color:var(--muted);border-radius:8px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit}
+
+/* ---------- Standings ---------- */
+table.stand{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px}
+table.stand th,table.stand td{padding:11px 8px;text-align:center;font-size:14px}
+table.stand th{background:rgba(255,255,255,.1);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)}
+table.stand td.team{text-align:left;font-weight:800}
+table.stand tr{border-bottom:1px solid rgba(255,255,255,.08)}
+table.stand tr.qualify{background:linear-gradient(90deg,rgba(31,122,61,.28),transparent)}
+.seedbadge{display:inline-flex;width:24px;height:24px;align-items:center;justify-content:center;border-radius:50%;background:var(--gold);color:#3a2a00;font-weight:900;font-size:12px;margin-right:8px}
+.q-tag{font-size:10px;color:#7dffa8;font-weight:800;letter-spacing:1px}
+
+/* ---------- Bracket ---------- */
+.bracket{display:grid;gap:16px}
+.series{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:14px}
+.series h3{margin:0 0 4px;font-size:14px;letter-spacing:2px;text-transform:uppercase;color:var(--gold)}
+.series .matchup{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0}
+.series .tm{flex:1;display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px}
+.series .tm .sc{margin-left:auto;font-size:22px;font-weight:900;color:var(--gold)}
+.series .tm.winner{color:#7dffa8}
+.games-row{display:grid;gap:8px;margin-top:8px}
+.gm{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;background:rgba(0,0,0,.2);border-radius:10px;padding:8px}
+.gm label{font-size:11px;color:var(--muted);letter-spacing:1px}
+.gm select{background:#0d1a4d;color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px;font-family:inherit;font-weight:700}
+.gm .wbtn{padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;font-weight:800;cursor:pointer;font-size:12px;font-family:inherit}
+.gm .wbtn.a.on{background:linear-gradient(180deg,#1f7a3d,#155e2e);border-color:#57d98a}
+.gm .wbtn.b.on{background:linear-gradient(180deg,#1f7a3d,#155e2e);border-color:#57d98a}
+.champ-banner{text-align:center;padding:22px;border-radius:18px;background:linear-gradient(180deg,rgba(255,212,71,.22),rgba(255,212,71,.05));border:2px solid var(--gold)}
+.champ-banner .big{font-size:26px;font-weight:900;color:var(--gold);text-shadow:0 0 18px rgba(255,212,71,.5)}
+.note{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* ---------- Rules ---------- */
+.rule-game{margin-bottom:10px}
+.rule-head{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;
+  background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.16);
+  border-radius:14px;padding:14px;font-weight:900;font-size:17px;color:#fff;font-family:inherit}
+.rule-head .gi{font-size:22px}
+.rule-head .chev{transition:.2s;color:var(--muted)}
+.rule-game.open .chev{transform:rotate(90deg)}
+.rule-body{max-height:0;overflow:hidden;transition:max-height .3s ease;padding:0 6px}
+.rule-game.open .rule-body{max-height:1400px}
+.rule-body ul{margin:12px 0;padding-left:20px}
+.rule-body li{margin:7px 0;line-height:1.5;font-size:14px;color:#e8edff}
+.rule-body h4{margin:14px 0 4px;color:var(--gold);letter-spacing:1px;font-size:13px;text-transform:uppercase}
+.rule-body .tag{display:inline-block;font-size:11px;font-weight:800;background:var(--red);padding:3px 9px;border-radius:999px;margin-left:8px}
+
+/* ---------- Sync banner / footer ---------- */
+.sync-pill{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:40;font-size:12px;font-weight:800;
+  padding:8px 16px;border-radius:999px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.25);display:flex;gap:8px;align-items:center}
+.sync-pill.live{background:linear-gradient(180deg,#1f7a3d,#124f27)}
+.sync-pill.local{background:linear-gradient(180deg,#7a5a1f,#4f3a12)}
+.dot{width:9px;height:9px;border-radius:50%;background:#7dffa8;box-shadow:0 0 8px #7dffa8}
+.sync-pill.local .dot{background:var(--gold);box-shadow:0 0 8px var(--gold)}
+.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:24px;line-height:1.6}
+.foot .adminlink{color:var(--gold);cursor:pointer;text-decoration:underline}
+.btn-danger{background:transparent;border:1px solid rgba(230,57,70,.6);color:#ff9aa6;border-radius:10px;padding:8px 14px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:6px}
+</style>
+</head>
+<body>
+<canvas id="fw"></canvas>
+<div class="flagbar"></div>
+
+<div class="app">
+  <header class="hero">
+    <div class="stars-strip">★ ★ ★ ★ ★ ★ ★</div>
+    <div class="subtitle">Family Championship</div>
+    <h1 class="title">Beer<br>Olympics</h1>
+    <span class="year-badge">🦅 2026 · 4TH OF JULY 🎆</span>
+    <div class="countdown" id="countdown"></div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-view="home">🏠 Home</button>
+    <button class="tab" data-view="teams">👯 Teams</button>
+    <button class="tab" data-view="schedule">📅 Schedule</button>
+    <button class="tab" data-view="standings">🏅 Standings</button>
+    <button class="tab" data-view="bracket">🏆 Bracket</button>
+    <button class="tab" data-view="rules">📜 Rules</button>
+  </nav>
+
+  <!-- HOME -->
+  <section class="view active" id="view-home">
+    <div class="card">
+      <h2>🎇 Welcome to the Games</h2>
+      <p class="lead">Seven teams. Five events. One star-spangled champion.</p>
+      <p style="line-height:1.6">Every team plays <b>4 different games</b> in the round robin. The <b>top 4</b> by record advance to the <b>Championship Bracket</b> — best 2 of 3, higher seed picks the game. Tap the <b>Schedule</b> to log winners as you go; <b>Standings</b> and the <b>Bracket</b> update automatically for everyone watching.</p>
+    </div>
+    <div class="sect-title">The Five Events</div>
+    <div class="team-grid" id="events-home"></div>
+    <div class="sect-title">How It Works</div>
+    <div class="card">
+      <ul style="line-height:1.7;padding-left:18px">
+        <li><b>Round Robin:</b> 5 rounds — each round runs 3 different games at once (all stations busy), and every team plays 4 different games.</li>
+        <li><b>Seeding:</b> by wins → head-to-head → dart-off tiebreaker.</li>
+        <li><b>Championship:</b> top 4 seeds, best 2 of 3, all different games.</li>
+        <li><b>Higher seed</b> picks the game — but not the same game the first two rounds.</li>
+        <li><b>NO FOUL PLAY. EVERYONE MUST HAVE FUN.</b> 🇺🇸</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- TEAMS -->
+  <section class="view" id="view-teams">
+    <div class="card"><h2>👯 The Teams</h2><p class="lead">Seven duos battling for glory. Records update live.</p>
+      <div class="team-grid" id="team-grid"></div>
+    </div>
+  </section>
+
+  <!-- SCHEDULE -->
+  <section class="view" id="view-schedule">
+    <div class="card"><h2>📅 Round Robin Schedule</h2>
+      <p class="lead">Tap the winning team of each match. Optional: add scores. Everyone sees updates instantly.</p>
+      <div id="schedule-list"></div>
+    </div>
+  </section>
+
+  <!-- STANDINGS -->
+  <section class="view" id="view-standings">
+    <div class="card"><h2>🏅 Standings</h2>
+      <p class="lead">Top 4 (highlighted) advance to the championship. Ties broken by head-to-head, then a dart-off.</p>
+      <table class="stand" id="stand-table"></table>
+      <p class="note">Seeds 1–4 auto-feed the bracket once the round robin is complete (or anytime you're ready).</p>
+    </div>
+  </section>
+
+  <!-- BRACKET -->
+  <section class="view" id="view-bracket">
+    <div class="card"><h2>🏆 Championship Bracket</h2>
+      <p class="lead">Best 2 of 3 · all different games · higher seed picks (not the same game rounds 1 & 2).</p>
+      <div id="bracket-wrap" class="bracket"></div>
+    </div>
+  </section>
+
+  <!-- RULES -->
+  <section class="view" id="view-rules">
+    <div class="card"><h2>📜 Game Rules</h2><p class="lead">Tap a game to expand. NO FOUL PLAY — EVERYONE MUST HAVE FUN!</p>
+      <div id="rules-list"></div>
+    </div>
+  </section>
+
+  <div class="foot">
+    🇺🇸 Beer Olympics 2026 · Built for the family 🇺🇸<br>
+    <span class="adminlink" id="admin-toggle">admin / reset</span>
+    <div id="admin-panel" style="display:none;margin-top:8px">
+      <button class="btn-danger" id="reset-all">Reset ALL scores &amp; bracket</button>
+    </div>
+  </div>
+</div>
+
+<div class="sync-pill local" id="sync-pill"><span class="dot"></span><span id="sync-text">Local mode</span></div>
+
+<!-- Firebase (optional live sync) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+/* ============================================================
+   DATA
+============================================================ */
+const TEAMS = [
+  { name:"Hayden & Maddie", emoji:"🦅" },
+  { name:"Jordan & Paul",   emoji:"🔥" },
+  { name:"Jill & Jack",     emoji:"⭐" },
+  { name:"Emma & Bennett",  emoji:"🎆" },
+  { name:"Amy & Nick",      emoji:"🗽" },
+  { name:"Andrea & John",   emoji:"🍺" },
+  { name:"Lily & Will",     emoji:"🎇" },
+];
+const GAMES = ["Flip Cup","Beer Pong","Speed Ball","Darts","Pictionary"];
+const GAME_EMOJI = ["🥤","🏓","⚡","🎯","🎨"];
+
+// Generated & verified schedule. Each round runs 3 DIFFERENT games in parallel
+// (one match per station) so all tables stay busy. game index -> GAMES[]
+const MATCHES = [
+  { id:1,  round:1, a:0, b:1, game:0 },
+  { id:2,  round:1, a:5, b:6, game:1 },
+  { id:3,  round:1, a:3, b:4, game:4 },
+  { id:4,  round:2, a:0, b:2, game:1 },
+  { id:5,  round:2, a:3, b:5, game:3 },
+  { id:6,  round:2, a:1, b:6, game:4 },
+  { id:7,  round:3, a:1, b:3, game:1 },
+  { id:8,  round:3, a:0, b:5, game:2 },
+  { id:9,  round:3, a:2, b:4, game:3 },
+  { id:10, round:4, a:4, b:5, game:0 },
+  { id:11, round:4, a:1, b:2, game:2 },
+  { id:12, round:4, a:0, b:6, game:3 },
+  { id:13, round:5, a:2, b:3, game:0 },
+  { id:14, round:5, a:4, b:6, game:2 },
+];
+
+const RULES = [
+  { g:0, title:"Flip Cup", sub:"Shot Grid Edition", body:`
+    <h4>Setup</h4><ul>
+      <li>A <b>5×5 grid</b> is taped onto the table. Each player has a solo cup.</li>
+      <li>A shot glass starts in the <b>center</b> of the grid. Teammates stand side by side, across from opponents.</li></ul>
+    <h4>How to Play</h4><ul>
+      <li>Everyone starts flipping their solo cup at the same time.</li>
+      <li>When you successfully flip your cup, move the shot glass <b>one square away from you</b> — toward the opponent.</li>
+      <li>Goal: push the shot off the <b>opposing team's endline</b>.</li>
+      <li>If the shot crosses <b>your</b> endline, you take the shot and your team loses the round.</li>
+      <li><b>If the same teammate loses both rounds, they do NOT have to take both shots.</b></li></ul>
+    <h4>Match Format</h4><ul>
+      <li>Best <b>2 of 3</b> rounds.</li>
+      <li>After each round, switch who you're facing across the table.</li></ul>` },
+  { g:1, title:"Beer Pong", sub:"Shortened · 6 cups", body:`
+    <h4>Setup <span class="tag">SHORTENED</span></h4><ul>
+      <li>This year: <b>6 cups</b> in a triangle on each side (faster games!).</li>
+      <li>Teams take turns shooting <b>two balls per turn</b> at the opposing cups.</li></ul>
+    <h4>Gameplay</h4><ul>
+      <li>Ball lands in a cup → <b>leave it in</b> for a "same cup" shot.</li>
+      <li>Both teammates make <b>different</b> cups → those 2 cups removed, balls back.</li>
+      <li>Both make the <b>same</b> cup → balls back and defense removes <b>2 extra</b> cups of their choice (3 total).</li>
+      <li><b>No travelers.</b></li></ul>
+    <h4>Reracks</h4><ul>
+      <li>One rerack per game: <b>6-pack, Zipper, Diamond, Stoplight</b>.</li>
+      <li>Down to <b>2 cups</b> → automatic gentlemen's rerack.</li></ul>
+    <h4>Endgame</h4><ul>
+      <li>If your final cup is sunk, you get a <b>redemption</b> turn to stay alive.</li>
+      <li>Overtime? Check with <b>Hayden or Jack</b>.</li></ul>` },
+  { g:2, title:"Speed Ball", sub:"", body:`
+    <ul>
+      <li>Each player starts with a full drink and an <b>upside-down can</b> on the corner of the table. Teammates sit next to each other.</li>
+      <li>Teams take turns throwing the ball at the opposing team's cans.</li>
+      <li>First time a teammate's can is hit, <b>their teammate flips their can right-side up</b> — now "active" and allowed to drink on future hits.</li>
+      <li>Once active, when your teammate hits a can again you <b>start drinking</b> while the other team scrambles to return the ball to the table. Ball back on table → <b>stop drinking</b>.</li>
+      <li>Play continues until one team <b>finishes both drinks</b> — that team wins.</li>
+      <li>If a can is knocked off or finished, move it to the <b>center</b>; from then on only the non-drinking teammate throws.</li>
+      <li>Can falls completely off the table → replace with a full can.</li></ul>` },
+  { g:3, title:"Darts", sub:"", body:`
+    <ul>
+      <li>Each team gets <b>6 darts total</b> — 3 per teammate.</li>
+      <li>All players throw; highest <b>combined score</b> wins the round.</li></ul>
+    <h4>Tiebreaker</h4><ul>
+      <li>Tie → each player throws <b>1 dart</b>; highest combined score of those wins.</li>
+      <li>(This is also the tournament-wide tiebreaker for seeding.)</li></ul>` },
+  { g:4, title:"Pictionary", sub:"NEW for 2026", body:`
+    <h4>Head-to-Head Draw-Off <span class="tag">NEW</span></h4><ul>
+      <li>Two teams face off. Each round, <b>one player from each team draws the SAME secret word</b> at the same time while their teammate guesses.</li>
+      <li><b>60 seconds</b> per word. First team whose guesser shouts the correct word wins the point.</li>
+      <li>No letters, no numbers, no talking or gesturing by the drawer.</li>
+      <li>Losers of each round take a drink. 🍺</li></ul>
+    <h4>Match Format</h4><ul>
+      <li>First team to <b>3 points</b> wins the match.</li>
+      <li>Switch who draws each round.</li>
+      <li>Neutral person (or the app's word list) supplies words.</li></ul>` },
+];
+
+/* ============================================================
+   STATE + SYNC (Firebase Realtime DB, localStorage fallback)
+============================================================ */
+const LS_KEY = "beerOlympics2026";
+let state = { results:{}, bracket:{}, seedTiebreak:{} };
+let db = null, dbRef = null, isLive = false, suppressWrite = false;
+
+function initSync(){
+  const cfg = window.FIREBASE_CONFIG || {};
+  const hasCfg = cfg.databaseURL && cfg.apiKey;
+  if(hasCfg && window.firebase){
+    try{
+      firebase.initializeApp(cfg);
+      db = firebase.database();
+      dbRef = db.ref("tournament2026");
+      isLive = true;
+      dbRef.on("value", snap=>{
+        const val = snap.val();
+        if(val){ suppressWrite = true; state = normalize(val); suppressWrite=false; renderAll(); }
+      }, err=>{ console.warn("DB read error",err); fallbackLocal(); });
+      setPill(true);
+      return;
+    }catch(e){ console.warn("Firebase init failed",e); }
+  }
+  fallbackLocal();
+}
+function fallbackLocal(){
+  isLive=false; setPill(false);
+  const raw = localStorage.getItem(LS_KEY);
+  if(raw){ try{ state = normalize(JSON.parse(raw)); }catch(e){} }
+  renderAll();
+}
+function normalize(v){
+  return { results:v.results||{}, bracket:v.bracket||{}, seedTiebreak:v.seedTiebreak||{} };
+}
+function save(){
+  if(suppressWrite) return;
+  if(isLive && dbRef){ dbRef.set(state).catch(e=>console.warn("save err",e)); }
+  else { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+}
+function setPill(live){
+  const p=document.getElementById("sync-pill"), t=document.getElementById("sync-text");
+  p.className = "sync-pill " + (live?"live":"local");
+  t.textContent = live ? "Live · synced to all devices" : "Local mode (this device only)";
+}
+
+/* ============================================================
+   STANDINGS / SEEDING
+============================================================ */
+function computeStandings(){
+  const rows = TEAMS.map((t,i)=>({i,name:t.name,emoji:t.emoji,w:0,l:0,played:0,pf:0,pa:0,beat:new Set()}));
+  MATCHES.forEach(m=>{
+    const r = state.results[m.id];
+    if(!r || !r.winner) return;
+    const A=rows[m.a], B=rows[m.b];
+    A.played++; B.played++;
+    if(typeof r.sa==="number"){A.pf+=r.sa;A.pa+=r.sb;B.pf+=r.sb;B.pa+=r.sa;}
+    if(r.winner==="a"){A.w++;B.l++;A.beat.add(m.b);}
+    else{B.w++;A.l++;B.beat.add(m.a);}
+  });
+  rows.sort((x,y)=>{
+    if(y.w!==x.w) return y.w-x.w;
+    // head to head
+    const xh = x.beat.has(y.i)?1:0, yh = y.beat.has(x.i)?1:0;
+    if(xh!==yh) return yh-xh;
+    // manual dart-off tiebreak (higher = better) if provided
+    const xt = state.seedTiebreak[x.i]||0, yt = state.seedTiebreak[y.i]||0;
+    if(yt!==xt) return yt-xt;
+    return (y.pf-y.pa)-(x.pf-x.pa);
+  });
+  rows.forEach((r,idx)=>r.seed=idx+1);
+  return rows;
+}
+
+/* ============================================================
+   RENDERERS
+============================================================ */
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+
+function renderEventsHome(){
+  const wrap=document.getElementById("events-home");wrap.innerHTML="";
+  GAMES.forEach((g,i)=>{
+    const c=el("div","team-card");
+    c.innerHTML=`<div class="team-emoji">${GAME_EMOJI[i]}</div><div class="team-name">${g}</div>`;
+    wrap.appendChild(c);
+  });
+}
+
+function renderTeams(){
+  const st=computeStandings(); const byIdx={}; st.forEach(r=>byIdx[r.i]=r);
+  const wrap=document.getElementById("team-grid");wrap.innerHTML="";
+  TEAMS.forEach((t,i)=>{
+    const r=byIdx[i];
+    const c=el("div","team-card");
+    c.innerHTML=`<div class="team-emoji">${t.emoji}</div><div class="team-name">${t.name}</div>
+      <div class="team-rec">${r.w}–${r.l} · ${r.played}/4 played</div>`;
+    wrap.appendChild(c);
+  });
+}
+
+function renderSchedule(){
+  const wrap=document.getElementById("schedule-list");wrap.innerHTML="";
+  for(let round=1;round<=5;round++){
+    const ms=MATCHES.filter(m=>m.round===round);
+    const block=el("div","round-block");
+    const head=el("div","round-head");
+    head.innerHTML=`<span class="round-tag">Round ${round}</span>
+      <span class="parallel-note">▶ ${ms.length} games at once</span>`;
+    block.appendChild(head);
+
+    ms.forEach(m=>{
+      const gi=m.game;
+      const r=state.results[m.id]||{};
+      const done = r.winner ? "done":"";
+      const mEl=el("div","match "+done);
+      const aWin=r.winner==="a", bWin=r.winner==="b";
+      mEl.innerHTML=`
+        <div class="match-game"><span class="game-pill">${GAME_EMOJI[gi]} ${GAMES[gi]}</span></div>
+        <div class="side">
+          <button class="pick ${aWin?'win':(bWin?'lose':'')}" data-m="${m.id}" data-w="a">${TEAMS[m.a].emoji} ${TEAMS[m.a].name}</button>
+        </div>
+        <div class="vs">VS</div>
+        <div class="side right">
+          <button class="pick ${bWin?'win':(aWin?'lose':'')}" data-m="${m.id}" data-w="b">${TEAMS[m.b].emoji} ${TEAMS[m.b].name}</button>
+        </div>
+        <div class="scores">
+          <input type="number" inputmode="numeric" placeholder="—" data-m="${m.id}" data-s="a" value="${r.sa??''}">
+          <span style="color:var(--muted);font-weight:800">score</span>
+          <input type="number" inputmode="numeric" placeholder="—" data-m="${m.id}" data-s="b" value="${r.sb??''}">
+          ${r.winner?`<button class="clearbtn" data-clear="${m.id}">clear</button>`:''}
+        </div>`;
+      block.appendChild(mEl);
+    });
+    // bye
+    const playing=new Set();ms.forEach(m=>{playing.add(m.a);playing.add(m.b);});
+    const byes=TEAMS.map((t,i)=>i).filter(i=>!playing.has(i));
+    if(byes.length){ block.appendChild(el("div","bye-row","🛋️ Bye: "+byes.map(i=>TEAMS[i].name).join(" · "))); }
+    wrap.appendChild(block);
+  }
+}
+
+function renderStandings(){
+  const rows=computeStandings();
+  const complete = MATCHES.every(m=>state.results[m.id]&&state.results[m.id].winner);
+  const t=document.getElementById("stand-table");
+  t.innerHTML=`<tr><th>Seed</th><th>Team</th><th>W</th><th>L</th><th>GP</th><th>Diff</th><th></th></tr>`;
+  rows.forEach(r=>{
+    const q=r.seed<=4;
+    const tr=el("tr",q?"qualify":"");
+    const diff=r.pf-r.pa;
+    tr.innerHTML=`<td><span class="seedbadge">${r.seed}</span></td>
+      <td class="team">${r.emoji} ${r.name}</td>
+      <td>${r.w}</td><td>${r.l}</td><td>${r.played}</td>
+      <td>${diff>0?'+':''}${diff||0}</td>
+      <td>${q?'<span class="q-tag">✔ BRACKET</span>':''}</td>`;
+    t.appendChild(tr);
+  });
+}
+
+/* ---------- Bracket ---------- */
+function bracketSeeds(){ return computeStandings().slice(0,4); }
+
+function seriesWinner(gamesArr){
+  let aw=0,bw=0;
+  (gamesArr||[]).forEach(g=>{ if(g.winner==="a")aw++; else if(g.winner==="b")bw++; });
+  if(aw>=2) return {w:"a",aw,bw};
+  if(bw>=2) return {w:"b",aw,bw};
+  return {w:null,aw,bw};
+}
+
+function renderBracket(){
+  const wrap=document.getElementById("bracket-wrap");wrap.innerHTML="";
+  const seeds=bracketSeeds();
+  const b=state.bracket;
+  // Semifinal pairings: 1v4, 2v3.  higher seed = 'a'
+  const sf1={key:"sf1",label:"Semifinal · #1 vs #4",a:seeds[0],b:seeds[3]};
+  const sf2={key:"sf2",label:"Semifinal · #2 vs #3",a:seeds[1],b:seeds[2]};
+
+  const w1=seriesWinner(b.sf1), w2=seriesWinner(b.sf2);
+  const f1Team = w1.w? (w1.w==="a"?sf1.a:sf1.b):null;
+  const f2Team = w2.w? (w2.w==="a"?sf2.a:sf2.b):null;
+  // final: higher seed is 'a'
+  let finalA=f1Team,finalB=f2Team;
+  if(f1Team&&f2Team&&f1Team.seed>f2Team.seed){ finalA=f2Team; finalB=f1Team; }
+  const final={key:"final",label:"🏆 Championship",a:finalA,b:finalB};
+
+  const anyResult = MATCHES.some(m=>state.results[m.id]&&state.results[m.id].winner);
+  if(!anyResult){
+    wrap.appendChild(el("div","card",`<p class="lead" style="margin:0">Log some round-robin results first — the top 4 seeds will drop in here automatically.</p>`));
+  }
+  wrap.appendChild(renderSeries(sf1));
+  wrap.appendChild(renderSeries(sf2));
+  wrap.appendChild(renderSeries(final,true));
+
+  // champion banner
+  const fw=seriesWinner(b.final);
+  const champ = fw.w? (fw.w==="a"?final.a:final.b):null;
+  if(champ){
+    const banner=el("div","champ-banner");
+    banner.innerHTML=`<div style="font-size:12px;letter-spacing:3px;color:#fff">🎆 2026 CHAMPIONS 🎆</div>
+      <div class="big">${champ.emoji} ${champ.name}</div>
+      <div style="margin-top:6px">Star-Spangled Champions of the Family</div>`;
+    wrap.appendChild(banner);
+    fireBurst();
+  }
+}
+
+function renderSeries(s,isFinal){
+  const box=el("div","series");
+  const stored = (state.bracket[s.key]||[]);
+  const sw=seriesWinner(stored);
+  const aName = s.a? `#${s.a.seed} ${s.a.emoji} ${s.a.name}` : "TBD";
+  const bName = s.b? `#${s.b.seed} ${s.b.emoji} ${s.b.name}` : "TBD";
+  box.innerHTML=`<h3>${s.label}</h3>
+    <div class="matchup">
+      <div class="tm ${sw.w==='a'?'winner':''}">${aName}<span class="sc">${sw.aw}</span></div>
+      <div style="color:var(--muted);font-weight:900">—</div>
+      <div class="tm ${sw.w==='b'?'winner':''}"><span class="sc" style="margin:0 auto 0 0">${sw.bw}</span>${bName}</div>
+    </div>`;
+  if(!s.a||!s.b){ box.appendChild(el("div","note",isFinal?"Winners of both semifinals meet here.":"Waiting on seeding.")); return box; }
+
+  const gamesRow=el("div","games-row");
+  const already = stored.map(g=>g.game);
+  for(let gi=0; gi<3; gi++){
+    const g = stored[gi]||{};
+    // rule: higher seed can't pick same game in rounds 1 & 2
+    const gm=el("div","gm");
+    let opts=`<option value="">— pick game —</option>`;
+    GAMES.forEach((gn,idx)=>{
+      opts+=`<option value="${idx}" ${g.game===idx?'selected':''}>${GAME_EMOJI[idx]} ${gn}</option>`;
+    });
+    const done = gi>0 && seriesWinner(stored.slice(0,gi)).w; // series already decided
+    gm.innerHTML=`<label>Game ${gi+1}</label>
+      <select data-series="${s.key}" data-gi="${gi}" ${done?'disabled':''}>${opts}</select>
+      <button class="wbtn a ${g.winner==='a'?'on':''}" data-series="${s.key}" data-gi="${gi}" data-w="a" ${done?'disabled':''}>${s.a.emoji} wins</button>
+      <button class="wbtn b ${g.winner==='b'?'on':''}" data-series="${s.key}" data-gi="${gi}" data-w="b" ${done?'disabled':''}>${s.b.emoji} wins</button>`;
+    gamesRow.appendChild(gm);
+  }
+  box.appendChild(gamesRow);
+  box.appendChild(el("div","note","Higher seed (#"+s.a.seed+") picks each game — avoid repeating the same game in Games 1 & 2."));
+  return box;
+}
+
+function renderRules(){
+  const wrap=document.getElementById("rules-list");wrap.innerHTML="";
+  RULES.forEach((r,idx)=>{
+    const g=el("div","rule-game"+(idx===0?" open":""));
+    g.innerHTML=`<button class="rule-head" data-rule="${idx}">
+        <span><span class="gi">${GAME_EMOJI[r.g]}</span> ${r.title}${r.sub?` <span style="color:var(--muted);font-size:13px">— ${r.sub}</span>`:''}</span>
+        <span class="chev">▶</span></button>
+      <div class="rule-body">${r.body}</div>`;
+    wrap.appendChild(g);
+  });
+}
+
+function renderAll(){
+  renderTeams();renderSchedule();renderStandings();renderBracket();
+}
+
+/* ============================================================
+   EVENTS
+============================================================ */
+document.getElementById("tabs").addEventListener("click",e=>{
+  const b=e.target.closest(".tab"); if(!b)return;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  b.classList.add("active");
+  document.getElementById("view-"+b.dataset.view).classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+
+document.getElementById("schedule-list").addEventListener("click",e=>{
+  const pick=e.target.closest(".pick");
+  if(pick){
+    const id=+pick.dataset.m, w=pick.dataset.w;
+    const cur=state.results[id]||{};
+    state.results[id]={...cur, winner: cur.winner===w? null : w};
+    if(!state.results[id].winner) delete state.results[id].winner;
+    save();renderAll();return;
+  }
+  const clr=e.target.closest("[data-clear]");
+  if(clr){ delete state.results[+clr.dataset.clear]; save();renderAll(); }
+});
+document.getElementById("schedule-list").addEventListener("change",e=>{
+  const inp=e.target.closest("input[data-s]"); if(!inp)return;
+  const id=+inp.dataset.m, side=inp.dataset.s;
+  const cur=state.results[id]||{};
+  const v=inp.value===""?undefined:+inp.value;
+  cur[side==="a"?"sa":"sb"]=v;
+  state.results[id]=cur; save();
+});
+
+document.getElementById("bracket-wrap").addEventListener("click",e=>{
+  const wb=e.target.closest(".wbtn"); if(!wb)return;
+  const key=wb.dataset.series, gi=+wb.dataset.gi, w=wb.dataset.w;
+  const arr=(state.bracket[key]||[]).slice();
+  while(arr.length<=gi) arr.push({});
+  arr[gi]={...arr[gi], winner: arr[gi].winner===w? null : w};
+  if(!arr[gi].winner) delete arr[gi].winner;
+  state.bracket[key]=arr; save();renderBracket();
+});
+document.getElementById("bracket-wrap").addEventListener("change",e=>{
+  const sel=e.target.closest("select[data-series]"); if(!sel)return;
+  const key=sel.dataset.series, gi=+sel.dataset.gi;
+  const arr=(state.bracket[key]||[]).slice();
+  while(arr.length<=gi) arr.push({});
+  arr[gi]={...arr[gi], game: sel.value===""?undefined:+sel.value};
+  state.bracket[key]=arr; save();renderBracket();
+});
+
+document.getElementById("rules-list").addEventListener("click",e=>{
+  const h=e.target.closest(".rule-head"); if(!h)return;
+  h.parentElement.classList.toggle("open");
+});
+
+document.getElementById("admin-toggle").addEventListener("click",()=>{
+  const p=document.getElementById("admin-panel");
+  p.style.display = p.style.display==="none"?"block":"none";
+});
+document.getElementById("reset-all").addEventListener("click",()=>{
+  if(confirm("Reset ALL scores and bracket for EVERYONE? This cannot be undone.")){
+    state={results:{},bracket:{},seedTiebreak:{}}; save();renderAll();
+  }
+});
+
+/* ============================================================
+   COUNTDOWN
+============================================================ */
+function renderCountdown(){
+  const target=new Date("2026-07-04T12:00:00");
+  const now=new Date();
+  let diff=Math.max(0,target-now);
+  const d=Math.floor(diff/864e5); diff-=d*864e5;
+  const h=Math.floor(diff/36e5); diff-=h*36e5;
+  const m=Math.floor(diff/6e4); diff-=m*6e4;
+  const s=Math.floor(diff/1e3);
+  const parts=[["Days",d],["Hrs",h],["Min",m],["Sec",s]];
+  document.getElementById("countdown").innerHTML =
+    (target-now<=0? `<div class="cd-box"><div class="cd-num">🎆 GAME DAY 🎆</div></div>` :
+    parts.map(p=>`<div class="cd-box"><div class="cd-num">${p[1]}</div><div class="cd-lab">${p[0]}</div></div>`).join(""));
+}
+setInterval(renderCountdown,1000);
+
+/* ============================================================
+   FIREWORKS
+============================================================ */
+const cv=document.getElementById("fw"), ctx=cv.getContext("2d");
+let W,H,parts=[];
+function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+resize();addEventListener("resize",resize);
+const COLORS=["#ffffff","#ff4d6d","#ffd447","#5fa8ff","#7dffa8"];
+function burst(x,y){
+  const n=34+Math.random()*20, c=COLORS[Math.floor(Math.random()*COLORS.length)];
+  for(let i=0;i<n;i++){
+    const a=(Math.PI*2*i)/n, sp=1.5+Math.random()*3.5;
+    parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:60+Math.random()*30,age:0,c});
+  }
+}
+function fireBurst(){ for(let k=0;k<5;k++) setTimeout(()=>burst(W*(0.2+Math.random()*0.6),H*(0.15+Math.random()*0.4)),k*250); }
+function loop(){
+  ctx.clearRect(0,0,W,H);
+  parts.forEach(p=>{
+    p.age++; p.x+=p.vx; p.y+=p.vy; p.vy+=0.03; p.vx*=0.99;
+    const alpha=Math.max(0,1-p.age/p.life);
+    ctx.globalAlpha=alpha; ctx.fillStyle=p.c;
+    ctx.beginPath();ctx.arc(p.x,p.y,2.2,0,7);ctx.fill();
+  });
+  ctx.globalAlpha=1;
+  parts=parts.filter(p=>p.age<p.life);
+  requestAnimationFrame(loop);
+}
+loop();
+// ambient fireworks
+setInterval(()=>{ if(document.hidden)return; burst(W*(0.15+Math.random()*0.7),H*(0.12+Math.random()*0.35)); }, 2600);
+
+/* ============================================================
+   BOOT
+============================================================ */
+renderEventsHome();
+renderRules();
+renderCountdown();
+initSync();
+setTimeout(fireBurst,600);
+</script>
+</body>
+</html>
