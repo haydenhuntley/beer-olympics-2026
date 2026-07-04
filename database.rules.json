@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "//": "Hardening: lock the whole database, then open ONLY the app's data path.",
+    "//2": "Everything outside tournament2026 is denied; limits blast radius vs wide-open test mode.",
+    ".read": false,
+    ".write": false,
+    "tournament2026": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}

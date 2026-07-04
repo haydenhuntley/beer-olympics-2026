@@ -396,7 +396,7 @@ function initSync(){
       isLive = true;
       dbRef.on("value", snap=>{
         const val = snap.val();
-        if(val){ suppressWrite = true; state = normalize(val); suppressWrite=false; renderAll(); }
+        suppressWrite = true; state = normalize(val || {}); suppressWrite=false; renderAll();
       }, err=>{ console.warn("DB read error",err); fallbackLocal(); });
       setPill(true);
       return;
