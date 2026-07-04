@@ -116,6 +116,13 @@ section.view.active{display:block}
 .match .scores{grid-column:1/-1;display:flex;gap:8px;justify-content:center;align-items:center;margin-top:4px}
 .match .scores input{width:56px;text-align:center;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.25);color:#fff;padding:6px;font-weight:800;font-family:inherit}
 .bye-row{text-align:center;color:var(--muted);font-size:12px;letter-spacing:1px;padding:4px;font-style:italic}
+.tip-banner{display:flex;align-items:center;gap:12px;margin:0 0 16px;padding:14px 16px;border-radius:14px;
+  background:linear-gradient(180deg,rgba(255,212,71,.2),rgba(255,212,71,.06));border:1px solid rgba(255,212,71,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15)}
+.tip-banner .ico{font-size:26px;flex:0 0 auto;animation:tipwave 2.2s ease-in-out infinite}
+@keyframes tipwave{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+.tip-banner .txt{font-size:14px;line-height:1.4;color:#fff8e6}
+.tip-banner .txt b{color:var(--gold)}
 .clearbtn{background:transparent;border:1px dashed rgba(255,255,255,.25);color:var(--muted);border-radius:8px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit}
 
 /* ---------- Standings ---------- */
@@ -201,7 +208,11 @@ table.stand tr.qualify{background:linear-gradient(90deg,rgba(31,122,61,.28),tran
     <div class="card">
       <h2>🎇 Welcome to the Games</h2>
       <p class="lead">Seven teams. Five events. One star-spangled champion.</p>
-      <p style="line-height:1.6">Every team plays <b>4 different games</b> in the round robin. The <b>top 4</b> by record advance to the <b>Championship Bracket</b> — best 2 of 3, higher seed picks the game. Tap the <b>Schedule</b> to log winners as you go; <b>Standings</b> and the <b>Bracket</b> update automatically for everyone watching.</p>
+      <p style="line-height:1.6">Every team plays <b>4 different games</b> in the round robin. The <b>top 4</b> by record advance to the <b>Championship Bracket</b> — best 2 of 3, higher seed picks the game. <b>Standings</b> and the <b>Bracket</b> update automatically for everyone watching.</p>
+      <div class="tip-banner">
+        <span class="ico">🏆</span>
+        <span class="txt">Finished a game? <b>Go tell Hayden who won!</b> He logs every result here and the whole site updates live.</span>
+      </div>
     </div>
     <div class="sect-title">The Five Events</div>
     <div class="team-grid" id="events-home"></div>
@@ -227,7 +238,11 @@ table.stand tr.qualify{background:linear-gradient(90deg,rgba(31,122,61,.28),tran
   <!-- SCHEDULE -->
   <section class="view" id="view-schedule">
     <div class="card"><h2>📅 Round Robin Schedule</h2>
-      <p class="lead">Tap the winning team of each match. Optional: add scores. Everyone sees updates instantly.</p>
+      <p class="lead">Everyone sees updates instantly as results come in.</p>
+      <div class="tip-banner">
+        <span class="ico">🏆</span>
+        <span class="txt">When your game finishes, <b>go tell Hayden who won!</b> He keeps score here and it updates live for everyone.</span>
+      </div>
       <div id="schedule-list"></div>
     </div>
   </section>
