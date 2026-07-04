@@ -208,7 +208,7 @@ table.stand tr.qualify{background:linear-gradient(90deg,rgba(31,122,61,.28),tran
     <div class="card">
       <h2>🎇 Welcome to the Games</h2>
       <p class="lead">Seven teams. Five events. One star-spangled champion.</p>
-      <p style="line-height:1.6">Every team plays <b>4 different games</b> in the round robin. The <b>top 4</b> by record advance to the <b>Championship Bracket</b> — best 2 of 3, higher seed picks the game. <b>Standings</b> and the <b>Bracket</b> update automatically for everyone watching.</p>
+      <p style="line-height:1.6">Every team plays <b>4 different games</b> in the round robin. <b>All 7 teams</b> then advance to the <b>Championship Bracket</b> — the <b>#1 seed earns a first-round bye</b>, quarterfinals & semifinals are single games, and the final is best 2 of 3. Higher seed picks the game. <b>Standings</b> and the <b>Bracket</b> update automatically for everyone watching.</p>
       <div class="tip-banner">
         <span class="ico">🏆</span>
         <span class="txt">Finished a game? <b>Go tell Hayden who won!</b> He logs every result here and the whole site updates live.</span>
@@ -221,7 +221,7 @@ table.stand tr.qualify{background:linear-gradient(90deg,rgba(31,122,61,.28),tran
       <ul style="line-height:1.7;padding-left:18px">
         <li><b>Round Robin:</b> 5 rounds — each round runs 3 different games at once (all stations busy), and every team plays 4 different games.</li>
         <li><b>Seeding:</b> by wins → head-to-head → dart-off tiebreaker.</li>
-        <li><b>Championship:</b> top 4 seeds, best 2 of 3, all different games.</li>
+        <li><b>Championship:</b> all 7 teams; #1 seed byes to the semis; quarters & semis are single games; final is best 2 of 3.</li>
         <li><b>Higher seed</b> picks the game — but not the same game the first two rounds.</li>
         <li><b>NO FOUL PLAY. EVERYONE MUST HAVE FUN.</b> 🇺🇸</li>
       </ul>
@@ -250,7 +250,7 @@ table.stand tr.qualify{background:linear-gradient(90deg,rgba(31,122,61,.28),tran
   <!-- STANDINGS -->
   <section class="view" id="view-standings">
     <div class="card"><h2>🏅 Standings</h2>
-      <p class="lead">Top 4 (highlighted) advance to the championship. Ties broken by head-to-head, then a dart-off.</p>
+      <p class="lead">All 7 teams make the bracket — the <b>#1 seed (highlighted) earns a first-round bye</b>. Ties broken by head-to-head, then a dart-off.</p>
       <table class="stand" id="stand-table"></table>
       <p class="note">Seeds 1–4 auto-feed the bracket once the round robin is complete (or anytime you're ready).</p>
     </div>
@@ -259,7 +259,7 @@ table.stand tr.qualify{background:linear-gradient(90deg,rgba(31,122,61,.28),tran
   <!-- BRACKET -->
   <section class="view" id="view-bracket">
     <div class="card"><h2>🏆 Championship Bracket</h2>
-      <p class="lead">Best 2 of 3 · all different games · higher seed picks (not the same game rounds 1 & 2).</p>
+      <p class="lead">All 7 teams · #1 seed byes · single-game quarters & semis · best-2-of-3 final · higher seed picks the game.</p>
       <div id="bracket-wrap" class="bracket"></div>
     </div>
   </section>
@@ -525,56 +525,84 @@ function renderStandings(){
   const t=document.getElementById("stand-table");
   t.innerHTML=`<tr><th>Seed</th><th>Team</th><th>W</th><th>L</th><th>GP</th><th>Diff</th><th></th></tr>`;
   rows.forEach(r=>{
-    const q=r.seed<=4;
-    const tr=el("tr",q?"qualify":"");
+    const isBye=r.seed===1;
+    const tr=el("tr",isBye?"qualify":"");
     const diff=r.pf-r.pa;
     tr.innerHTML=`<td><span class="seedbadge">${r.seed}</span></td>
       <td class="team">${r.emoji} ${r.name}</td>
       <td>${r.w}</td><td>${r.l}</td><td>${r.played}</td>
       <td>${diff>0?'+':''}${diff||0}</td>
-      <td>${q?'<span class="q-tag">✔ BRACKET</span>':''}</td>`;
+      <td>${isBye?'<span class="q-tag">🎟️ BYE</span>':''}</td>`;
     t.appendChild(tr);
   });
 }
 
 /* ---------- Bracket ---------- */
-function bracketSeeds(){ return computeStandings().slice(0,4); }
+// All 7 teams make the bracket (seeds 1..7 by standings). #1 gets a bye.
+function bracketSeeds(){ return computeStandings(); }
 
-function seriesWinner(gamesArr){
+// higher seed (smaller seed number) goes first as 'a'
+function higherFirst(t1,t2){
+  if(!t1||!t2) return [t1,t2];
+  return t1.seed<=t2.seed ? [t1,t2] : [t2,t1];
+}
+
+function seriesWinner(gamesArr, winsNeeded){
+  winsNeeded = winsNeeded || 2;
   let aw=0,bw=0;
   (gamesArr||[]).forEach(g=>{ if(g.winner==="a")aw++; else if(g.winner==="b")bw++; });
-  if(aw>=2) return {w:"a",aw,bw};
-  if(bw>=2) return {w:"b",aw,bw};
+  if(aw>=winsNeeded) return {w:"a",aw,bw};
+  if(bw>=winsNeeded) return {w:"b",aw,bw};
   return {w:null,aw,bw};
 }
 
 function renderBracket(){
   const wrap=document.getElementById("bracket-wrap");wrap.innerHTML="";
-  const seeds=bracketSeeds();
+  const seeds=bracketSeeds();          // seeds[0]=#1 ... seeds[6]=#7
   const b=state.bracket;
-  // Semifinal pairings: 1v4, 2v3.  higher seed = 'a'
-  const sf1={key:"sf1",label:"Semifinal · #1 vs #4",a:seeds[0],b:seeds[3]};
-  const sf2={key:"sf2",label:"Semifinal · #2 vs #3",a:seeds[1],b:seeds[2]};
-
-  const w1=seriesWinner(b.sf1), w2=seriesWinner(b.sf2);
-  const f1Team = w1.w? (w1.w==="a"?sf1.a:sf1.b):null;
-  const f2Team = w2.w? (w2.w==="a"?sf2.a:sf2.b):null;
-  // final: higher seed is 'a'
-  let finalA=f1Team,finalB=f2Team;
-  if(f1Team&&f2Team&&f1Team.seed>f2Team.seed){ finalA=f2Team; finalB=f1Team; }
-  const final={key:"final",label:"🏆 Championship",a:finalA,b:finalB};
 
   const anyResult = MATCHES.some(m=>state.results[m.id]&&state.results[m.id].winner);
   if(!anyResult){
-    wrap.appendChild(el("div","card",`<p class="lead" style="margin:0">Log some round-robin results first — the top 4 seeds will drop in here automatically.</p>`));
+    wrap.appendChild(el("div","card",`<p class="lead" style="margin:0">Log some round-robin results first — all 7 seeds drop into the bracket automatically.</p>`));
   }
-  wrap.appendChild(renderSeries(sf1));
-  wrap.appendChild(renderSeries(sf2));
-  wrap.appendChild(renderSeries(final,true));
+
+  // #1 seed bye banner
+  const bye=seeds[0];
+  const byeBox=el("div","series");
+  byeBox.innerHTML=`<h3>🎟️ First-Round Bye</h3>
+    <div class="matchup"><div class="tm winner" style="flex:1">#1 ${bye.emoji} ${bye.name}
+      <span class="sc" style="font-size:12px;letter-spacing:1px;color:var(--gold)">BYE → SEMIS</span></div></div>
+    <div class="note">Top seed sits out the quarterfinals and awaits the #4/#5 winner.</div>`;
+  wrap.appendChild(byeBox);
+
+  // Quarterfinals — single game each (#1 byes)
+  const qfA={key:"qfA",label:"Quarterfinal · #4 vs #5",a:seeds[3],b:seeds[4],bestOf:1};
+  const qfB={key:"qfB",label:"Quarterfinal · #2 vs #7",a:seeds[1],b:seeds[6],bestOf:1};
+  const qfC={key:"qfC",label:"Quarterfinal · #3 vs #6",a:seeds[2],b:seeds[5],bestOf:1};
+  [qfA,qfB,qfC].forEach(s=>wrap.appendChild(renderSeries(s)));
+
+  const wA=seriesWinner(b.qfA,1), wB=seriesWinner(b.qfB,1), wC=seriesWinner(b.qfC,1);
+  const teamA=wA.w?(wA.w==="a"?qfA.a:qfA.b):null;   // #4/#5 winner
+  const teamB=wB.w?(wB.w==="a"?qfB.a:qfB.b):null;   // #2/#7 winner
+  const teamC=wC.w?(wC.w==="a"?qfC.a:qfC.b):null;   // #3/#6 winner
+
+  // Semifinals — single game each
+  const semi1={key:"semi1",label:"Semifinal · #1 vs #4/#5 winner",a:seeds[0],b:teamA,bestOf:1};
+  const [s2a,s2b]=higherFirst(teamB,teamC);
+  const semi2={key:"semi2",label:"Semifinal · #2/#7 vs #3/#6 winners",a:s2a,b:s2b,bestOf:1};
+  wrap.appendChild(renderSeries(semi1));
+  wrap.appendChild(renderSeries(semi2));
+
+  const ws1=seriesWinner(b.semi1,1), ws2=seriesWinner(b.semi2,1);
+  const f1=ws1.w?(ws1.w==="a"?semi1.a:semi1.b):null;
+  const f2=ws2.w?(ws2.w==="a"?semi2.a:semi2.b):null;
+  const [fa,fb]=higherFirst(f1,f2);
+  const finals={key:"finals",label:"🏆 Championship · Best 2 of 3",a:fa,b:fb,bestOf:3};
+  wrap.appendChild(renderSeries(finals,true));
 
   // champion banner
-  const fw=seriesWinner(b.final);
-  const champ = fw.w? (fw.w==="a"?final.a:final.b):null;
+  const fw=seriesWinner(b.finals,2);
+  const champ = fw.w? (fw.w==="a"?finals.a:finals.b):null;
   if(champ){
     const banner=el("div","champ-banner");
     banner.innerHTML=`<div style="font-size:12px;letter-spacing:3px;color:#fff">🎆 2026 CHAMPIONS 🎆</div>
@@ -586,9 +614,11 @@ function renderBracket(){
 }
 
 function renderSeries(s,isFinal){
+  const bestOf = s.bestOf || 3;
+  const winsNeeded = Math.ceil(bestOf/2);   // 1 for single game, 2 for best-of-3
   const box=el("div","series");
   const stored = (state.bracket[s.key]||[]);
-  const sw=seriesWinner(stored);
+  const sw=seriesWinner(stored, winsNeeded);
   const aName = s.a? `#${s.a.seed} ${s.a.emoji} ${s.a.name}` : "TBD";
   const bName = s.b? `#${s.b.seed} ${s.b.emoji} ${s.b.name}` : "TBD";
   box.innerHTML=`<h3>${s.label}</h3>
@@ -597,27 +627,28 @@ function renderSeries(s,isFinal){
       <div style="color:var(--muted);font-weight:900">—</div>
       <div class="tm ${sw.w==='b'?'winner':''}"><span class="sc" style="margin:0 auto 0 0">${sw.bw}</span>${bName}</div>
     </div>`;
-  if(!s.a||!s.b){ box.appendChild(el("div","note",isFinal?"Winners of both semifinals meet here.":"Waiting on seeding.")); return box; }
+  if(!s.a||!s.b){ box.appendChild(el("div","note",isFinal?"Winners of both semifinals meet here.":"Waiting on the previous round.")); return box; }
 
   const gamesRow=el("div","games-row");
-  const already = stored.map(g=>g.game);
-  for(let gi=0; gi<3; gi++){
+  for(let gi=0; gi<bestOf; gi++){
     const g = stored[gi]||{};
-    // rule: higher seed can't pick same game in rounds 1 & 2
     const gm=el("div","gm");
     let opts=`<option value="">— pick game —</option>`;
     GAMES.forEach((gn,idx)=>{
       opts+=`<option value="${idx}" ${g.game===idx?'selected':''}>${GAME_EMOJI[idx]} ${gn}</option>`;
     });
-    const done = gi>0 && seriesWinner(stored.slice(0,gi)).w; // series already decided
-    gm.innerHTML=`<label>Game ${gi+1}</label>
+    const done = gi>0 && seriesWinner(stored.slice(0,gi), winsNeeded).w; // series already decided
+    gm.innerHTML=`<label>${bestOf>1?('Game '+(gi+1)):'Game'}</label>
       <select data-series="${s.key}" data-gi="${gi}" ${done?'disabled':''}>${opts}</select>
       <button class="wbtn a ${g.winner==='a'?'on':''}" data-series="${s.key}" data-gi="${gi}" data-w="a" ${done?'disabled':''}>${s.a.emoji} wins</button>
       <button class="wbtn b ${g.winner==='b'?'on':''}" data-series="${s.key}" data-gi="${gi}" data-w="b" ${done?'disabled':''}>${s.b.emoji} wins</button>`;
     gamesRow.appendChild(gm);
   }
   box.appendChild(gamesRow);
-  box.appendChild(el("div","note","Higher seed (#"+s.a.seed+") picks each game — avoid repeating the same game in Games 1 & 2."));
+  const note = bestOf>1
+    ? "Higher seed (#"+s.a.seed+") picks each game — avoid repeating the same game in Games 1 & 2."
+    : "Higher seed (#"+s.a.seed+") picks the game.";
+  box.appendChild(el("div","note",note));
   return box;
 }
 
